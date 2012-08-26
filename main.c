@@ -573,12 +573,13 @@ deliver()
 
 	int custi = atoi(custs);
 
-	i = 0;
+	i = 1;
 
 	for ( order = orders ; i < custi ; order = order->next ) ++i;
 
 	if ( order->pizza == holding )
 	{
+		mvprintw(0,0,"%d %d", order->pizza, holding);
 		++dordercount;
 		currency += pizza_price(order->pizza);
 	}
@@ -858,7 +859,7 @@ main(int argc, char** argv)
 				oven[o] |= 32;
 			}
 		}
-		if ( ( (int) time(NULL) % 50 ) == 0 && isneworder == 0 )
+		if ( ( (int) time(NULL) % 5 ) == 0 && isneworder == 0 )
 		{
 			isneworder = 1;
 			neworder = (Order *) malloc(sizeof(Order));
@@ -883,7 +884,7 @@ main(int argc, char** argv)
 				}
 			}
 		}
-		else if ( ( ( (int) time(NULL) + 10 ) % 50 ) == 0 && isneworder == 1 )
+		else if ( ( ( (int) time(NULL) + 4 ) % 5 ) == 0 && isneworder == 1 )
 		{
 			free(neworder);
 			isneworder = 0;
