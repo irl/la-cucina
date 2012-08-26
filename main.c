@@ -37,6 +37,13 @@ struct order
 	Order *next;
 };
 
+int currency = 0;
+int pepperoni = 3;
+int cheese = 3;
+int tomato = 3;
+int garlic = 3;
+int dough = 4;
+
 Order *orders;
 int ordercount = 0;
 int mordercount = 0;
@@ -81,6 +88,27 @@ pizza_name(int pizza)
 			return "WTF";
 	}
 }
+
+int
+pizza_price(int pizza)
+{
+	pizza ^= 32;
+
+	switch ( pizza )
+	{
+		case 3:
+			return 3;
+		case 11:
+			return 4;
+		case 13:
+			return 5;
+		case 29:
+			return 6;
+		default:
+			return 200;
+	}
+}
+
 
 char *
 random_name()
@@ -166,6 +194,8 @@ draw_screen()
 	char* h5 = malloc(50);
 	char* h6 = malloc(50);
 
+	char* cur = malloc(50);
+
 	if ( ! h1 || ! h2 || ! h3 || ! h4 || ! h5 || ! h6 )
 	{
 		endwin();
@@ -218,6 +248,12 @@ draw_screen()
 
 	mvprintw(0, i, "La Cucina");
 	mvprintw(row - 1, 0, "%s", status);
+
+	sprintf(cur, "Budget: %d", currency);
+
+	mvprintw(row - 1, col - 1 - strlen(cur), cur);
+
+	free(cur);
 
 	attron(COLOR_PAIR(2));
 
@@ -300,7 +336,7 @@ draw_screen()
 
 		if ( isneworder && ((int) time(NULL)) % 2 == 0 )
 		{
-			buf = str_replace(buf, "T", "#");
+			buf = str_replace(buf, "T|", "#|");
 		}
 
 		mvprintw(i, 0, buf);
@@ -370,35 +406,65 @@ pickup()
 				case 'd':
 					if ( holding == 0 )
 					{
+						if ( dough == 0 )
+						{
+							strcpy(status, "You don't have enough dough.");
+							goto picked;
+						}
 						holding = 1;
+						--dough;
 						goto picked;
 					}
 					break;
 				case 'g':
 					if ( holding == 1 )
 					{
+						if ( garlic == 0 )
+						{
+							strcpy(status, "You don't have enough garlic sauce.");
+							goto picked;
+						}
 						holding |= 2;
+						--garlic;
 						goto picked;
 					}
 					break;
 				case 't':
 					if ( holding == 1 )
 					{
+						if ( tomato == 0 )
+						{
+							strcpy(status, "You don't have enough tomato sauce.");
+							goto picked;
+						}
 						holding |= 4;
+						--tomato;
 						goto picked;
 					}
 					break;
 				case 'c':
 					if ( holding == 3 || holding == 5 )
 					{
+						if ( cheese == 0 )
+						{
+							strcpy(status, "You don't have enough cheese.");
+							goto picked;
+						}
 						holding |= 8;
+						--cheese;
 						goto picked;
 					}
 					break;
 				case 'p':
 					if ( ( ( holding & 8 ) != 0 ) && ( ( holding & 2 ) == 0 ) )
 					{
+						if ( pepperoni == 0 )
+						{
+							strcpy(status, "You don't have enough pepperoni.");
+							goto picked;
+						}
 						holding |= 16;
+						--pepperoni;
 						goto picked;
 					}
 					break;
@@ -514,6 +580,7 @@ deliver()
 	if ( order->pizza == holding )
 	{
 		++dordercount;
+		currency += pizza_price(order->pizza);
 	}
 	else
 	{
@@ -632,6 +699,65 @@ drop()
 }
 
 void
+shop()
+{
+	char ch;
+	char* cur = malloc(50);
+
+	front = create_newwin(7, 70);
+
+	attron(COLOR_PAIR(1));
+
+	while ( ( ch = getch() ) != 'o' )
+	{
+		sprintf(cur, " Budget: %d", currency);
+	
+		mvprintw(row - 1, col - 1 - strlen(cur), cur);
+
+		wrefresh(stdscr);
+	
+		mvwprintw(front, 2, 2, "Dough: %d\tGarlic Sauce: %d  \tTomato Sauce: %d", dough, garlic, tomato);
+	
+		mvwprintw(front, 4, 2, "Cheese: %d\tPepperoni: %d", cheese, pepperoni);
+	
+		wrefresh(front);
+
+		if ( currency == 0 )
+		{
+			continue;
+		}
+
+		switch ( ch )
+		{
+			case 'd':
+				++dough;
+				--currency;
+				break;
+			case 'g':
+				++garlic;
+				--currency;
+				break;
+			case 't':
+				++tomato;
+				--currency;
+				break;
+			case 'c':
+				++cheese;
+				--currency;
+				break;
+			case 'p':
+				++pepperoni;
+				--currency;
+				break;
+		}
+	}
+
+	free(cur);
+
+	destroy_win(front);
+}
+
+void
 handle_events()
 {
 	char c = getch();
@@ -666,14 +792,17 @@ handle_events()
 		case 'l':
 			make_move(1, 0);
 			break;
-		case 'p':
+		case 'y':
 			pickup();
 			break;
-		case 'd':
+		case 'p':
 			drop();
 			break;
-		case 'n':
+		case 'b':
 			notepad();
+			break;
+		case 'i':
+			shop();
 			break;
 	}
 }
