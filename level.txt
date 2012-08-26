@@ -1,0 +1,19 @@
+Pizza Maker Level File                                                        
+This data is used to display the level intitally                              
+
+ +----------D---------+  You have <OO> outstanding orders.
+ |                   1|  You have missed <MM> orders.
+ |                   2|  You have messed up <FF> orders.
+ |                   3|  You have delivered <DD> successfully.
+ |                    |  
+ |                    |  You are currently working with:
+ |p                   |    <H1>
+ |c                   |    <H2>
+ |t                   |    <H3>
+ |g                   |    <H4>
+ |d                   |    <H5>
+ |                   T|    <H6>
+ |                    |
+ |                    |
+ +--------------------+
+
